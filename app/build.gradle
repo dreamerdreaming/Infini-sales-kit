@@ -1,4 +1,4 @@
-plugins { id 'com.android.application' }
+        versionCode = (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as Integerplugins { id 'com.android.application' }
 android {
     namespace 'com.infini.saleskit'
     compileSdk 34
