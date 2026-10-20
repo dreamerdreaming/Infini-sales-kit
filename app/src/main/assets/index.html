@@ -345,11 +345,14 @@ nav button:active{transform:scale(.9)}
     <!-- PHYSICAL -->
     <div id="p-phys" class="stack" hidden>
       <div class="panel stack">
+        <div class="label">Design</div>
+        <div class="seg" id="pStyle"><button data-y="infini">Infini style</button><button data-y="classic">Centered logo</button></div>
         <div class="label">Card</div>
         <div class="seg" id="pOrient"><button data-o="landscape">Landscape</button><button data-o="portrait">Portrait</button></div>
         <div class="seg" id="pView"><button data-v="both">Front + back</button><button data-v="front">Front</button><button data-v="back">Back</button></div>
         <div class="label">Card colour</div>
         <div class="swatches" id="pBases"></div>
+        <label class="f">Any colour<input type="color" id="pBaseColor"></label>
         <div class="label">Foil print</div>
         <div class="swatches" id="pFoils"></div>
         <label class="f">Font<select id="pFont">
@@ -378,6 +381,8 @@ nav button:active{transform:scale(.9)}
         </div>
         <label class="check"><input type="checkbox" id="pQR" checked> Show QR code</label>
         <label class="check"><input type="checkbox" id="pNfc" checked> Show tap (NFC) icon</label>
+        <label class="check"><input type="checkbox" id="pPowered" checked> "Powered by Infini Cards"</label>
+        <p class="hint" id="pStyleHint">Infini style: phone, website and tagline are not printed. Business name is used for the emblem when there is no logo.</p>
       </div>
       <div class="panel stack">
         <div class="label">Preview background</div>
@@ -683,7 +688,7 @@ let st={
  fest:{k:'',size:'post',lang:'both',offer:true,title:'',price:'499',mrp:'1199',line:'Premium NFC card + 1 year Premium free',till:'',card:true,greet:'',cta:'Order on WhatsApp'},
  c:{layout:'price',size:'post',theme:0,bg:'',ac:'',badge:'50% OFF',head:'Your business card, now with one tap',sub:'NFC + QR digital card · 1 year Premium free',price:'',mrp:'',cta:'Order on WhatsApp',cardOnPhoto:true},
  testi:[{id:'t1',q:'Clients save my number the second I tap. Feels so professional at meetings.',n:'Arun K.',b:'Real estate, Kozhikode',p:''}], tcur:'t1',
- pd:{orient:'landscape',view:'both',base:'black',foil:'gold',font:'cinzel',logo:'',logoFoil:true,logoClean:true,biz:'Infini Creative Studio',tag:'Tap · Connect · Grow',name:'Your Name',title:'Founder',phone:'+91 98470 12345',web:'infinicreativestudio.in',qr:true,nfc:true,scene:'studio',size:'post',cap:''},
+ pd:{style:'infini',baseCustom:'',powered:true,orient:'portrait',view:'both',base:'black',foil:'gold',font:'montserrat',logo:'',logoFoil:true,logoClean:true,biz:'Infini Creative Studio',tag:'Tap · Connect · Grow',name:'Your Name',title:'Founder',phone:'+91 98470 12345',web:'infinicreativestudio.in',qr:true,nfc:true,scene:'studio',size:'post',cap:''},
  dc:{name:'Your Name',title:'Founder',biz:'Your Business',about:'Helping you grow with one tap',phone:'+91 98470 12345',email:'hello@yourbusiness.in',web:'yourbusiness.in',insta:'@yourbusiness',loc:'Kozhikode, Kerala',mode:'light',color:'#C9A24A',photo:'',cap:''}
 };
 try{const raw=localStorage.getItem(KEY); if(raw)merge(JSON.parse(raw))}catch(e){}
@@ -990,19 +995,63 @@ function qrBlock(c,x,y,s,fill,seedStr){
   finder(0,0);finder(n-7,0);finder(0,n-7);
 }
 
+
+/* Infini house style: logo top-right + name bottom-left / QR centre + tap icon + powered-by */
+function emblem(x,cx,cy,R,foil,pd){
+  const biz=(pd.biz||'Your Business').toUpperCase();
+  const ini=biz.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('')||'∞';
+  x.strokeStyle=foil;x.fillStyle=foil;
+  x.lineWidth=R*.035;x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();
+  x.lineWidth=R*.02;x.beginPath();x.arc(cx,cy,R*.68,0,7);x.stroke();
+  x.textAlign='center';x.textBaseline='middle';
+  x.font=`500 ${R*.62}px ${FONTS.playfair}`;x.fillText(ini,cx,cy+R*.04,R*1.2);
+  // business name around the ring
+  const fs=R*.15;x.font=`700 ${fs}px ${BODY}`;const txt=biz.length>26?biz.slice(0,26):biz;
+  const rad=R*.84,span=Math.min(Math.PI*1.25,txt.length*fs*.78/rad);let a=-Math.PI/2-span/2;
+  for(const ch of txt){x.save();x.translate(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);x.rotate(a+Math.PI/2);x.fillText(ch,0,0);x.restore();a+=span/Math.max(1,txt.length-1)}
+  x.textBaseline='alphabetic';
+}
+function houseStyle(x,side,W,H,S,L,foil,F,pd){
+  const pad=S*.1;
+  if(side==='front'){
+    const box=S*(L?.34:.36),bx=W-pad-box,by=pad;
+    const art=logoArt(pd);
+    if(art){const sc=Math.min(box/art.width,box/art.height);x.drawImage(art,bx+box-art.width*sc,by,art.width*sc,art.height*sc)}
+    else emblem(x,bx+box/2,by+box/2,box/2,foil,pd);
+    x.textAlign='left';x.fillStyle=foil;
+    const ny=L?H*.74:H*.6,maxW=W-pad*2;
+    const fs=fitOne(x,pd.name||'Your Name',maxW,S*.088,600,F);x.font=`600 ${fs}px ${F}`;x.fillText(pd.name||'Your Name',pad,ny);
+    if(pd.title){const f2=fitOne(x,pd.title,maxW,S*.05,500,F);x.font=`500 ${f2}px ${F}`;x.globalAlpha=.92;x.fillText(pd.title,pad,ny+fs*.95);x.globalAlpha=1}
+  }else{
+    if(pd.nfc)nfcIcon(x,W-pad-S*.03,pad+S*.02,S*.026,foil,S*.012);
+    if(pd.qr){const qs=L?H*.46:S*.44;qrBlock(x,W/2-qs/2,H/2-qs/2-(L?0:S*.02),qs,foil,(pd.name||'')+(pd.web||''))}
+    if(pd.powered){
+      const fs=S*.032,y=H-pad*.85;x.textAlign='left';x.fillStyle=foil;
+      x.font=`700 ${fs}px ${BODY}`;try{x.letterSpacing=(fs*.08)+'px'}catch(e){}
+      let cx=pad*.9;x.fillText('POWERED BY',cx,y);cx+=x.measureText('POWERED BY').width+fs*.6;try{x.letterSpacing='0px'}catch(e){}
+      x.lineWidth=fs*.14;x.strokeStyle=foil;for(let i=0;i<2;i++){x.beginPath();x.moveTo(cx+i*fs*.38,y+fs*.15);x.lineTo(cx+i*fs*.38+fs*.42,y-fs*1.05);x.stroke()}
+      cx+=fs*1.15;
+      // infinity mark
+      const iw=fs*1.9,ih=fs*.95,icx=cx+iw/2,icy=y-fs*.55;x.lineWidth=fs*.2;x.beginPath();
+      for(let t=0;t<=Math.PI*2+.01;t+=.1){const px=icx+(iw/2)*Math.cos(t)/(1+Math.sin(t)**2),py=icy+(ih)*Math.sin(t)*Math.cos(t)/(1+Math.sin(t)**2);t?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+      x.font=`700 ${fs*.48}px ${BODY}`;x.textAlign='center';x.fillText('INFINI CARDS',icx,y+fs*.3);x.textAlign='left';
+    }
+  }
+}
 /* the physical card, drawn into its own canvas then placed */
 function cardCanvas(side,longPx){
   const pd=st.pd,L=pd.orient==='landscape';
   const W=Math.round(L?longPx:longPx/1.586),H=Math.round(L?longPx/1.586:longPx);
   const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-  const S=Math.min(W,H),r=S*0.075,base=BASES[pd.base]||BASES.black,F=FONTS[pd.font]||FONTS.cinzel;
+  const S=Math.min(W,H),r=S*0.075,base=pd.baseCustom?['',shade(pd.baseCustom,14),shade(pd.baseCustom,-16)]:(BASES[pd.base]||BASES.black),F=FONTS[pd.font]||FONTS.cinzel;
   rr(0,0,W,H,r,x);x.save();x.clip();
   const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,base[1]);g.addColorStop(1,base[2]);x.fillStyle=g;x.fillRect(0,0,W,H);
   x.fillStyle=x.createPattern(noise,'repeat');x.fillRect(0,0,W,H);
   const sh=x.createLinearGradient(0,0,W*.8,H);sh.addColorStop(0,'rgba(255,255,255,.07)');sh.addColorStop(.5,'rgba(255,255,255,0)');x.fillStyle=sh;x.fillRect(0,0,W,H);
   const foil=foilGrad(x,0,0,W,H,pd.foil);
   x.textAlign='center';x.textBaseline='alphabetic';
-  if(side==='front'){
+  if(pd.style!=='classic'){houseStyle(x,side,W,H,S,L,foil,F,pd)}
+  else if(side==='front'){
     const art=logoArt(pd);
     const hasText=!!(pd.biz||pd.tag);
     const boxH=hasText?(L?H*.42:H*.3):H*.5,boxW=W*.6,cy=hasText?(L?H*.4:H*.42):H*.5;
@@ -1255,15 +1304,18 @@ $('#tPhoto').onchange=e=>{const f=e.target.files[0],t=curTesti();if(!f||!t)retur
 armed($('#tDel'),'Tap again to delete',()=>{st.testi=st.testi.filter(x=>x!==curTesti());st.tcur=st.testi[0]?.id;save();paintTesti();draw()});
 
 /* physical controls */
-const PM={pBiz:'biz',pTag:'tag',pName:'name',pTitle:'title',pPhone:'phone',pWeb:'web',pQR:'qr',pNfc:'nfc',pLogoFoil:'logoFoil',pLogoClean:'logoClean',pCap:'cap',pFont:'font'};
-const segP=[segInit('#pOrient','o',()=>st.pd.orient,v=>{st.pd.orient=v;save();draw()}),segInit('#pView','v',()=>st.pd.view,v=>{st.pd.view=v;save();draw()}),segInit('#pScene','s',()=>st.pd.scene,v=>{st.pd.scene=v;save();draw()}),segInit('#pSize','z',()=>st.pd.size,v=>{st.pd.size=v;save();draw()})];
+const PM={pBiz:'biz',pTag:'tag',pName:'name',pTitle:'title',pPhone:'phone',pWeb:'web',pQR:'qr',pNfc:'nfc',pLogoFoil:'logoFoil',pLogoClean:'logoClean',pCap:'cap',pFont:'font',pPowered:'powered'};
+const segP=[segInit('#pStyle','y',()=>st.pd.style,v=>{st.pd.style=v;save();$('#pStyleHint').hidden=v!=='infini';draw()}),segInit('#pOrient','o',()=>st.pd.orient,v=>{st.pd.orient=v;save();draw()}),segInit('#pView','v',()=>st.pd.view,v=>{st.pd.view=v;save();draw()}),segInit('#pScene','s',()=>st.pd.scene,v=>{st.pd.scene=v;save();draw()}),segInit('#pSize','z',()=>st.pd.size,v=>{st.pd.size=v;save();draw()})];
 function paintPhys(){
   segP.forEach(f=>f());
   $('#pBases').innerHTML=Object.entries(BASES).map(([k,b])=>`<button class="sw ${k===st.pd.base?'on':''}" aria-label="${b[0]}" title="${b[0]}" data-k="${k}" style="background:linear-gradient(135deg,${b[1]},${b[2]})"></button>`).join('');
-  $$('#pBases .sw').forEach(b=>b.onclick=()=>{st.pd.base=b.dataset.k;save();paintPhys();draw()});
+  $$('#pBases .sw').forEach(b=>b.onclick=()=>{st.pd.base=b.dataset.k;st.pd.baseCustom='';save();paintPhys();draw()});
+  if(st.pd.baseCustom)$$('#pBases .sw').forEach(b=>b.classList.remove('on'));
+  $('#pBaseColor').value=st.pd.baseCustom||BASES[st.pd.base][1];$('#pStyleHint').hidden=st.pd.style!=='infini';
   $('#pFoils').innerHTML=Object.entries(FOILS).map(([k,f])=>`<button class="sw ${k===st.pd.foil?'on':''}" aria-label="${f[0]}" title="${f[0]}" data-k="${k}" style="background:linear-gradient(135deg,${f[1].join(',')})"></button>`).join('');
   $$('#pFoils .sw').forEach(b=>b.onclick=()=>{st.pd.foil=b.dataset.k;save();paintPhys();draw()});
 }
+$('#pBaseColor').oninput=e=>{st.pd.baseCustom=e.target.value;save();$$('#pBases .sw').forEach(b=>b.classList.remove('on'));sched()};
 $('#pLogo').onchange=e=>{const f=e.target.files[0];if(!f)return;readImg(f,700,u=>{st.pd.logo=u;save();draw()})};
 $('#pLogoClear').onclick=()=>{st.pd.logo='';$('#pLogo').value='';save();draw()};
 function fillPdFromLead(){const l=curLead();if(!l)return toast('Pick a lead in Replies first');if(l.name){st.pd.name=l.name;st.pd.cap='Design preview for '+l.name.split(' ')[0]}if(l.biz)st.pd.biz=l.biz;if(l.phone)st.pd.phone=l.phone;save();bindAll()}
