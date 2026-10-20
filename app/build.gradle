@@ -1,0 +1,28 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.infini.saleskit'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.infini.saleskit'
+        minSdk 24
+        targetSdk 34
+        // goes up by 1 on every GitHub build, so each APK installs over the last
+        versionCode (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+        versionName "1.0." + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+    signingConfigs {
+        fixed {
+            storeFile file('infini.keystore')
+            storePassword 'infini123'
+            keyAlias 'infini'
+            keyPassword 'infini123'
+        }
+    }
+    buildTypes {
+        debug { signingConfig signingConfigs.fixed }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
