@@ -289,6 +289,9 @@ nav button:active{transform:scale(.9)}
           <label class="f">Background<input type="color" id="cBg"></label>
           <label class="f">Accent<input type="color" id="cAcc"></label>
         </div>
+        <label class="check"><input type="checkbox" id="cGrad"> Gradient background</label>
+        <label class="f" id="cBg2Row">Gradient end colour<input type="color" id="cBg2"></label>
+        <p class="hint">Phone demo uses your Digital card design (Create → Digital).</p>
       </div>
       <div class="panel stack" id="testiPanel" hidden>
         <div class="label">Customer testimonial</div>
@@ -310,6 +313,7 @@ nav button:active{transform:scale(.9)}
           <label class="f">Old price ₹<input id="cMrp" inputmode="numeric"></label>
         </div>
         <label class="f">Button text<input id="cCta"></label>
+        <label class="f" id="cFeatRow">Features <span class="hint">(one per line, Features layout)</span><textarea id="cFeat" style="min-height:96px"></textarea></label>
         <label class="f">Background photo <span class="hint">(Photo layout)</span><input type="file" id="cPhoto" accept="image/*"></label>
         <label class="check"><input type="checkbox" id="cCardOnPhoto" checked> Show card mockup on photo</label>
         <div class="row"><button class="btn ghost sm" id="cPhotoClear">Remove photo</button></div>
@@ -446,6 +450,9 @@ nav button:active{transform:scale(.9)}
     </div>
     <div class="panel stack">
       <div class="label">Look</div>
+      <div class="label">WhatsApp app to open</div>
+      <div class="seg" id="waSeg"><button data-w="com.whatsapp.w4b">WhatsApp Business</button><button data-w="com.whatsapp">WhatsApp</button></div>
+      <div class="label">App look</div>
       <div class="seg" id="themeSeg"><button data-t="system">Auto</button><button data-t="light">Light</button><button data-t="dark">Dark</button></div>
     </div>
     <div class="panel stack">
@@ -666,26 +673,48 @@ ml:`നിങ്ങളുടെ പോലെ ഒരു card വേണ്ട ആ�
 
 const THEMES=[
  {n:'Night gold',bg:'#0F1626',fg:'#F4F1E8',mu:'#9AA3B5',ac:'#F2B33D',ink:'#1A1206'},
+ {n:'Midnight Pro',bg:'#0B1220',fg:'#F2F5FF',mu:'#8E9AB8',ac:'#4F8CFF',ink:'#FFFFFF'},
+ {n:'Clean White',bg:'#FFFFFF',fg:'#0F172A',mu:'#5B6475',ac:'#2563EB',ink:'#FFFFFF'},
+ {n:'Emerald Trust',bg:'#064E3B',fg:'#ECFDF5',mu:'#9AD9C0',ac:'#10B981',ink:'#04261C'},
+ {n:'Sunset Creator',bg:'#1F1147',g:['#1F1147','#7A1E5A','#FF6A3D'],fg:'#FFFFFF',mu:'#F2D3E6',ac:'#FFD166',ink:'#1F1147'},
+ {n:'Gold Executive',bg:'#121212',fg:'#F5F1E6',mu:'#A8A294',ac:'#D4AF37',ink:'#121212'},
+ {n:'Soft Sand',bg:'#F6EFE6',fg:'#2E2014',mu:'#7A6652',ac:'#C8794A',ink:'#FFFFFF'},
+ {n:'Neon Tech',bg:'#0A0A0F',fg:'#EFFFFF',mu:'#7FA3AE',ac:'#00F0FF',ink:'#001418'},
+ {n:'Rose Studio',bg:'#FFF1F2',fg:'#3F0D1C',mu:'#8A5363',ac:'#FB7185',ink:'#FFFFFF'},
+ {n:'Glass',bg:'#101A33',g:['#0F1726','#2B2F77','#0E7490'],fg:'#FFFFFF',mu:'#C7D0E0',ac:'#A5F3FC',ink:'#0B1220'},
+ {n:'Ink Mono',bg:'#000000',fg:'#FFFFFF',mu:'#9A9A9A',ac:'#FFFFFF',ink:'#000000'},
  {n:'Coral ink',bg:'#17151C',fg:'#FFF6F1',mu:'#A79FA8',ac:'#FF6A4D',ink:'#FFFFFF'},
  {n:'Royal mint',bg:'#1E1446',fg:'#F7F3FF',mu:'#B3A8D9',ac:'#45E0C0',ink:'#0C1A16'},
  {n:'Fresh paper',bg:'#EEF5F0',fg:'#10261B',mu:'#4F6A5B',ac:'#0F8A5F',ink:'#FFFFFF'},
  {n:'Kerala red',bg:'#FFF4E6',fg:'#2A1208',mu:'#7A5A48',ac:'#C8341E',ink:'#FFFFFF'},
- {n:'Pure black',bg:'#050505',fg:'#F5F5F5',mu:'#9A9A9A',ac:'#D9B25F',ink:'#151005'}
+ {n:'Maroon gold',bg:'#3B0A14',fg:'#FFF4E8',mu:'#C9A9A0',ac:'#E8B04A',ink:'#2A0610'},
+ {n:'Charcoal lime',bg:'#1A1C1E',fg:'#F4F6F0',mu:'#9AA095',ac:'#C6F432',ink:'#161A04'},
+ {n:'Sunset',bg:'#E84A5F',g:['#FF5F6D','#FFC371'],fg:'#FFFFFF',mu:'#FFF0E0',ac:'#1A1A1A',ink:'#FFFFFF'},
+ {n:'Ocean',bg:'#0F2027',g:['#0F2027','#203A43','#2C5364'],fg:'#FFFFFF',mu:'#B7CCD6',ac:'#F2B33D',ink:'#1A1206'},
+ {n:'Insta',bg:'#833AB4',g:['#833AB4','#FD1D1D','#FCB045'],fg:'#FFFFFF',mu:'#FFE9DA',ac:'#FFFFFF',ink:'#1A1A1A'},
+ {n:'Mint fresh',bg:'#11998E',g:['#11998E','#38EF7D'],fg:'#FFFFFF',mu:'#E2FFF2',ac:'#06261F',ink:'#FFFFFF'},
+ {n:'Blue ink',bg:'#1E3C72',g:['#1E3C72','#2A5298'],fg:'#FFFFFF',mu:'#C5D3F0',ac:'#FFD166',ink:'#1E1300'},
+ {n:'Purple haze',bg:'#2F0743',g:['#41295A','#2F0743'],fg:'#FFFFFF',mu:'#D7C2E6',ac:'#F7C873',ink:'#2A0A30'},
+ {n:'Aurora night',bg:'#0F0C29',g:['#0F0C29','#302B63','#24243E'],fg:'#FFFFFF',mu:'#BDB8E6',ac:'#7CF5D4',ink:'#06201A'},
+ {n:'Peach sky',bg:'#FFDEE9',g:['#FFDEE9','#B5FFFC'],fg:'#1D1D2C',mu:'#4A4A5E',ac:'#1D1D2C',ink:'#FFFFFF'},
+ {n:'Rose gold',bg:'#B76E79',g:['#B76E79','#E8C1A0'],fg:'#FFFFFF',mu:'#FFEDE4',ac:'#2A0F14',ink:'#FFFFFF'},
+ {n:'Kerala green',bg:'#134E5E',g:['#134E5E','#71B280'],fg:'#FFFFFF',mu:'#D9EEE0',ac:'#FFE66D',ink:'#1A1A00'},
+ {n:'Gold rush',bg:'#1A1306',g:['#2A1E07','#0B0803'],fg:'#FFF6DE',mu:'#BFAE84',ac:'#E9C46A',ink:'#1A1306'}
 ];
-const LAYOUTS=[['price','Price drop'],['mockup','Card showcase'],['testi','Testimonial'],['free','Free card'],['tap','Tap to share'],['photo','Photo']];
+const LAYOUTS=[['price','Price drop'],['phone','Phone demo'],['mockup','Card showcase'],['sale','Big sale'],['features','Features'],['compare','Paper vs tap'],['testi','Testimonial'],['free','Free card'],['tap','Tap to share'],['photo','Photo']];
 const QUICK=['Your business card, now with one tap','Stop printing. Start tapping.','One tap. Your number saved.','Your digital card. Free.',"Paper cards get lost. Taps don't.",'Network like a pro','ഒറ്റ tap-ൽ നിങ്ങളുടെ card','Business card ഇനി ഒരു tap മാത്രം'];
 const BASES={black:['Matte black','#1d1d20','#0b0b0c'],white:['Pearl white','#f6f4ef','#dcd8cf'],navy:['Midnight navy','#1b2645','#0c1328'],green:['Forest green','#173329','#0a1913'],maroon:['Royal maroon','#3d121a','#1d070b'],gold:['Champagne','#d8c08a','#a98b4f']};
 const FOILS={gold:['Gold',['#8A6A2C','#F7E3A3','#B8903C','#FFF4CC','#9A7631','#E9CF86']],silver:['Silver',['#7D7F84','#F4F5F7','#A4A7AD','#FFFFFF','#86898F','#DADCE0']],rose:['Rose gold',['#9B5B4C','#F6CBBE','#B97563','#FFE3DA','#A0624F','#E7AE9C']],copper:['Copper',['#7A3F1E','#E9A170','#A8592C','#F6C29A','#83441F','#D58A55']],white:['White ink',['#E8E8E8','#FFFFFF','#F0F0F0','#FFFFFF','#E0E0E0','#FAFAFA']],black:['Black gloss',['#000000','#3a3a3a','#0a0a0a','#4a4a4a','#050505','#2a2a2a']]};
 const FONTS={cinzel:'"Cinzel",Georgia,serif',playfair:'"Playfair Display",Georgia,serif',montserrat:'"Montserrat","Figtree",sans-serif',bricolage:'"Bricolage Grotesque","Figtree",sans-serif'};
 
 let st={
- s:{me:'Hashi',biz:'Infini Cards',phone:'',upi:'',site:'cards.infinicreativestudio.in',price:'599',mrp:'1199',hrs:'48',proof:'',ref:'INFINI100',theme:'system'},
+ s:{me:'Hashi',biz:'Infini Cards',phone:'',upi:'',site:'cards.infinicreativestudio.in',wa:'com.whatsapp.w4b',price:'599',mrp:'1199',hrs:'48',proof:'',ref:'INFINI100',theme:'system'},
  tpl:DEFAULTS.map(x=>({...x})), lang:'en', grp:'Follow-up', view:'crm',
  leads:[], cur:null, filter:'due', lastBackup:0,
  offer:{style:'full'}, mk:'ads', cp:'offer',
  meta:{angle:'free',lang:'en',price:'',mrp:''},
  fest:{k:'',size:'post',lang:'both',offer:true,title:'',price:'499',mrp:'1199',line:'Premium NFC card + 1 year Premium free',till:'',card:true,greet:'',cta:'Order on WhatsApp'},
- c:{layout:'price',size:'post',theme:0,bg:'',ac:'',badge:'50% OFF',head:'Your business card, now with one tap',sub:'NFC + QR digital card · 1 year Premium free',price:'',mrp:'',cta:'Order on WhatsApp',cardOnPhoto:true},
+ c:{layout:'price',size:'post',theme:0,bg:'',ac:'',badge:'50% OFF',head:'Your business card, now with one tap',sub:'NFC + QR digital card · 1 year Premium free',price:'',mrp:'',cta:'Order on WhatsApp',cardOnPhoto:true,grad:false,bg2:'',feat:'Tap to share your contact\nWorks on every phone\nUpdate details anytime\n1 year Premium free'},
  testi:[{id:'t1',q:'Clients save my number the second I tap. Feels so professional at meetings.',n:'Arun K.',b:'Real estate, Kozhikode',p:''}], tcur:'t1',
  pd:{style:'infini',baseCustom:'',powered:true,orient:'portrait',view:'both',base:'black',foil:'gold',font:'montserrat',logo:'',logoFoil:true,logoClean:true,biz:'Infini Creative Studio',tag:'Tap · Connect · Grow',name:'Your Name',title:'Founder',phone:'+91 98470 12345',web:'infinicreativestudio.in',qr:true,nfc:true,scene:'studio',size:'post',cap:''},
  dc:{name:'Your Name',title:'Founder',biz:'Your Business',about:'Helping you grow with one tap',phone:'+91 98470 12345',email:'hello@yourbusiness.in',web:'yourbusiness.in',insta:'@yourbusiness',loc:'Kozhikode, Kerala',theme:'classic',mode:'light',color:'#C9A24A',photo:'',cap:''}
@@ -951,12 +980,12 @@ $('#oToCreative').onclick=()=>{
 };
 
 /* ---------- CANVAS CORE ---------- */
-const canvas=$('#mkCv'),ctx=canvas.getContext('2d');
+let canvas=$('#mkCv'),ctx=canvas.getContext('2d');
 let bgPhoto=null;
 const DISP='"Bricolage Grotesque","Noto Sans Malayalam",sans-serif',BODY='"Figtree","Noto Sans Malayalam",sans-serif';
 function rr(x,y,w,h,r,c=ctx){c.beginPath();if(c.roundRect)c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h)}
 function lines(text,maxW){const out=[];String(text||'').split('\n').forEach(par=>{let line='';par.split(/\s+/).forEach(w=>{const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t});out.push(line)});return out}
-function fitText(text,maxW,maxLines,start,min,weight,family){let s=start,ls;do{ctx.font=`${weight} ${s}px ${family}`;ls=lines(text,maxW);s-=4}while((ls.length>maxLines||ls.some(l=>ctx.measureText(l).width>maxW))&&s>min);return{size:s+4,ls}}
+function fitText(text,maxW,maxLines,start,min,weight,family){let s=start,ls;do{ctx.font=`${weight} ${s}px ${family}`;ls=lines(text,maxW);s-=4}while((ls.length>maxLines||ls.some(l=>ctx.measureText(l).width>maxW))&&s>min);return{size:s+4,ls,f:`${weight} ${s+4}px ${family}`}}
 function drawLines(ls,x,y,size,lh,align='left'){ctx.textAlign=align;ls.forEach((l,i)=>ctx.fillText(l,x,y+i*size*lh));ctx.textAlign='left';return y+ls.length*size*lh}
 function fitOne(c,text,maxW,size,weight,family){let s=size;do{c.font=`${weight} ${s}px ${family}`;s-=2}while(c.measureText(text).width>maxW&&s>8);return s+2}
 function nfcIcon(c,x,y,r,color,w){c.strokeStyle=color;c.lineWidth=w;c.lineCap='round';for(let i=1;i<=3;i++){c.beginPath();c.arc(x,y,r*i,-Math.PI/4,Math.PI/4);c.stroke()}}
@@ -1095,14 +1124,26 @@ function placeCard(side,cx,cy,longPx,rot,shadow=true){
 }
 
 /* ---------- ADS ---------- */
+const phoneCache=new Map();
+function phoneArt(){
+  const {photo,...rest}=st.dc,k=JSON.stringify(rest)+(photo?photo.length+(img(photo)?'y':'n'):'');
+  if(phoneCache.has(k))return phoneCache.get(k);
+  const off=document.createElement('canvas'),c0=canvas,x0=ctx;canvas=off;ctx=off.getContext('2d');
+  try{drawDig({bare:true})}finally{canvas=c0;ctx=x0}
+  const out=document.createElement('canvas');out.width=820;out.height=1790;out.getContext('2d').drawImage(off,130,60,820,1790,0,0,820,1790);
+  phoneCache.clear();phoneCache.set(k,out);return out;
+}
+function placePhone(cx,cy,h,rot){const a=phoneArt(),w=h*a.width/a.height;ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);ctx.drawImage(a,-w/2,-h/2,w,h);ctx.restore()}
 const SIZES={post:[1080,1080],portrait:[1080,1350],story:[1080,1920]};
 function lum(hex){const n=parseInt(hex.slice(1),16);return((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255}
 function theme(){
   const t={...(THEMES[st.c.theme]||THEMES[0])};
-  if(st.c.bg){t.bg=st.c.bg;const light=lum(t.bg)>.6;t.fg=light?'#14161F':'#F7F5EF';t.mu=light?'#5A6070':'#A7ADBC'}
+  if(st.c.bg){t.bg=st.c.bg;delete t.g;const light=lum(t.bg)>.6;t.fg=light?'#14161F':'#F7F5EF';t.mu=light?'#5A6070':'#A7ADBC'}
+  if(st.c.grad&&st.c.bg2){t.g=[t.bg,st.c.bg2];const light=(lum(t.bg)+lum(st.c.bg2))/2>.6;t.fg=light?'#14161F':'#F7F5EF';t.mu=light?'#5A6070':'#E2E4EC'}
   if(st.c.ac){t.ac=st.c.ac;t.ink=lum(t.ac)>.6?'#14110A':'#FFFFFF'}
   return t;
 }
+function fillBg(th,W,H){if(th.g){const gr=ctx.createLinearGradient(0,0,W,H);th.g.forEach((c,i)=>gr.addColorStop(i/(th.g.length-1),c));ctx.fillStyle=gr}else ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H)}
 function badge(text,x,y,th,size=40){if(!text)return y;ctx.font=`800 ${size}px ${BODY}`;const w=ctx.measureText(text).width+size*1.1,h=size*1.75;ctx.fillStyle=th.ac;rr(x,y,w,h,h/2);ctx.fill();ctx.fillStyle=th.ink;ctx.textBaseline='middle';ctx.fillText(text,x+size*.55,y+h/2+2);ctx.textBaseline='alphabetic';return y+h}
 function cta(th,W,H,m){const h=118,y=H-m-h,t=st.c.cta||'Order on WhatsApp';ctx.fillStyle=th.ac;rr(m,y,W-m*2,h,h/2);ctx.fill();ctx.fillStyle=th.ink;ctx.font=`800 46px ${BODY}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t+(st.s.phone?'  ·  '+st.s.phone:''),W/2,y+h/2+2,W-m*2-60);ctx.textAlign='left';ctx.textBaseline='alphabetic';return y}
 function priceBlock(th,x,yBase){
@@ -1114,7 +1155,7 @@ function glow(th,x,y,r){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColor
 const curTesti=()=>st.testi.find(t=>t.id===st.tcur)||st.testi[0];
 const LAY={
  price(th,W,H){
-  const m=80;ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);glow(th,W*.85,H*.45,W*.7);
+  const m=80;fillBg(th,W,H);glow(th,W*.85,H*.45,W*.7);
   let y=badge(st.c.badge,m,m,th)+50;
   ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,3,H>W?104:88,52,800,DISP);y=drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05)+6;
   ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,W-m*2,2,38,28,500,BODY);y=drawLines(sb.ls,m,y+sb.size*.6,sb.size,1.3);
@@ -1124,7 +1165,7 @@ const LAY={
   priceBlock(th,m,ctaY-46);
  },
  mockup(th,W,H){
-  const m=80;ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);glow(th,W*.5,H*.5,W*.8);
+  const m=80;fillBg(th,W,H);glow(th,W*.5,H*.5,W*.8);
   ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,2,92,52,800,DISP);let y=drawLines(hd.ls,W/2,m+hd.size*.85,hd.size,1.05,'center');
   ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,W-m*2,2,38,28,500,BODY);y=drawLines(sb.ls,W/2,y+sb.size*.5,sb.size,1.3,'center');
   const ctaY=cta(th,W,H,m),p=st.c.price||st.s.price,top=y+20,bot=ctaY-(p?120:30),mid=(top+bot)/2,space=bot-top,L=st.pd.orient==='landscape';
@@ -1136,7 +1177,7 @@ const LAY={
     if(extra){ctx.fillStyle=th.mu;ctx.font=`600 40px ${BODY}`;ctx.fillText(extra,sx+tw+24,ctaY-40);ctx.strokeStyle=th.mu;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx+tw+20,ctaY-54);ctx.lineTo(sx+tw+28+ew-24,ctaY-54);ctx.stroke()}}
  },
  testi(th,W,H){
-  const m=80,t=curTesti()||{q:'Add a testimonial below',n:'Customer',b:''};ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);glow(th,W*.1,H*.1,W*.7);
+  const m=80,t=curTesti()||{q:'Add a testimonial below',n:'Customer',b:''};fillBg(th,W,H);glow(th,W*.1,H*.1,W*.7);
   ctx.fillStyle=th.ac;ctx.font=`800 260px ${DISP}`;ctx.fillText('“',m-14,m+200);
   ctx.font=`700 46px ${BODY}`;ctx.fillText('★★★★★',m,m+250);
   const ctaY=cta(th,W,H,m);
@@ -1153,7 +1194,7 @@ const LAY={
   const long=Math.min(W*.34,300);placeCard('front',W-m-long*.42,fy+(avR||50),long,-0.14);
  },
  free(th,W,H){
-  const m=80;ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);glow(th,W*.5,H*.5,W*.75);
+  const m=80;fillBg(th,W,H);glow(th,W*.5,H*.5,W*.75);
   ctx.fillStyle=th.mu;ctx.font=`700 36px ${BODY}`;ctx.textAlign='center';ctx.fillText((st.c.badge||'LIMITED OFFER').toUpperCase(),W/2,m+30);ctx.textAlign='left';
   ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,3,112,56,800,DISP);let y=drawLines(hd.ls,W/2,m+70+hd.size*.8,hd.size,1.05,'center');
   ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,W-m*2,2,40,28,500,BODY);y=drawLines(sb.ls,W/2,y+sb.size*.4,sb.size,1.3,'center');
@@ -1163,8 +1204,57 @@ const LAY={
   ctx.fillStyle=th.ac;ctx.beginPath();for(let i=0;i<24;i++){const a=i/24*Math.PI*2,rad=i%2?r*.88:r;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}ctx.closePath();ctx.fill();
   ctx.fillStyle=th.ink;ctx.textAlign='center';ctx.font=`800 ${r*.48}px ${DISP}`;ctx.fillText('FREE',0,r*.08);ctx.font=`700 ${r*.2}px ${BODY}`;ctx.fillText('DIGITAL CARD',0,r*.38);ctx.restore();ctx.textAlign='left';
  },
+
+ phone(th,W,H){
+  const m=80;fillBg(th,W,H);glow(th,W*.75,H*.45,W*.7);
+  const ctaY=cta(th,W,H,m),ph=Math.min(ctaY-40-m,H>W?H*.58:H*.8),pw=ph*.458,pcx=W-m-pw/2+10;
+  placePhone(pcx,m+(ctaY-40-m)/2,ph,0.05);
+  const tw=pcx-pw/2-m-30;
+  let y=badge(st.c.badge,m,m,th,36)+40;
+  ctx.fillStyle=th.fg;const hd=fitText(st.c.head,tw,H>W?4:3,H>W?84:76,40,800,DISP);ctx.font=hd.f;y=drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05)+6;
+  ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,tw,3,32,22,500,BODY);ctx.font=sb.f;y=drawLines(sb.ls,m,y+sb.size*.6,sb.size,1.3);
+  const L=st.pd.orient==='landscape',space=ctaY-50-y;
+  if(space>160){const long=Math.min(L?tw*1.05:tw*.75,space*(L?1.2:.85));placeCard('front',m+(L?long*.5:long*.32)+10,y+space/2+10,long,-0.14)}
+ },
+ sale(th,W,H){
+  const m=80;fillBg(th,W,H);glow(th,W/2,H*.4,W*.8);
+  ctx.fillStyle=th.mu;ctx.font=`700 30px ${BODY}`;ctx.textAlign='center';try{ctx.letterSpacing='5px'}catch(e){}ctx.fillText((st.s.biz||'Infini Cards').toUpperCase(),W/2,m+40);try{ctx.letterSpacing='0px'}catch(e){}ctx.textAlign='left';
+  const ctaY=cta(th,W,H,m),top=m+80,avail=ctaY-40-top,p=st.c.price||st.s.price,mr=st.c.mrp||st.s.mrp,prH=p?175:0;
+  let sc=1,big,hd,tot;
+  for(let i=0;i<12;i++){big=fitText(st.c.badge||'50% OFF',W-m*2,2,Math.round((H>W?300:220)*sc),70,900,DISP);hd=fitText(st.c.head,W-m*2,2,Math.round(58*sc),30,800,DISP);
+    tot=big.ls.length*big.size*.92-big.size*.5+big.size*.82+hd.ls.length*hd.size*1.1+prH+20;if(tot<=avail*(H>W?.62:.86))break;sc-=.07}
+  let y=top+(H>W?40:Math.max(0,(avail-tot)/2));
+  ctx.fillStyle=th.ac;ctx.font=big.f;y=drawLines(big.ls,W/2,y+big.size*.82,big.size,.92,'center')-big.size*.5;
+  ctx.fillStyle=th.fg;ctx.font=hd.f;y=drawLines(hd.ls,W/2,y+hd.size*.5,hd.size,1.1,'center');
+  if(p){ctx.font=`800 100px ${DISP}`;const t='₹'+p,tw=ctx.measureText(t).width;ctx.font=`600 44px ${BODY}`;const ex=mr&&mr!==p?'₹'+mr:'',ew=ex?ctx.measureText(ex).width+26:0;const sx=W/2-(tw+ew)/2,py=y+105;
+   ctx.fillStyle=th.fg;ctx.font=`800 100px ${DISP}`;ctx.fillText(t,sx,py);if(ex){ctx.fillStyle=th.mu;ctx.font=`600 44px ${BODY}`;ctx.fillText(ex,sx+tw+26,py-10);ctx.strokeStyle=th.ac;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sx+tw+22,py-25);ctx.lineTo(sx+tw+30+ew-26,py-25);ctx.stroke()}y=py+30}
+  const space=ctaY-40-y;
+  if(space>170){const L=st.pd.orient==='landscape',long=Math.min(L?W*.5:W*.32,space*(L?1.25:.85));placeCard('front',W/2,y+space/2,long,-0.08)}
+ },
+ features(th,W,H){
+  const m=80;fillBg(th,W,H);glow(th,W*.85,H*.35,W*.6);
+  let y=badge(st.c.badge,m,m,th,36)+40;
+  ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,2,H>W?90:78,46,800,DISP);ctx.font=hd.f;y=drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05)+20;
+  const ctaY=cta(th,W,H,m),list=String(st.c.feat||'').split('\n').map(x=>x.trim()).filter(Boolean).slice(0,6);
+  const region=ctaY-40-y,rowH=Math.min(H>W?130:96,region/Math.max(1,list.length)),tw=W*.56;
+  list.forEach((t,i)=>{const cy=y+rowH*i+rowH/2;ctx.fillStyle=th.ac;ctx.beginPath();ctx.arc(m+26,cy,26,0,7);ctx.fill();ctx.strokeStyle=th.ink;ctx.lineWidth=6;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(m+14,cy+1);ctx.lineTo(m+23,cy+10);ctx.lineTo(m+39,cy-9);ctx.stroke();
+   ctx.fillStyle=th.fg;const fs=fitOne(ctx,t,tw-80,H>W?44:38,700,BODY);ctx.font=`700 ${fs}px ${BODY}`;ctx.fillText(t,m+72,cy+fs*.35)});
+  const L=st.pd.orient==='landscape',long=Math.min(L?W*.4:W*.3,region*(L?1.1:.85));placeCard('front',W-m-(L?long*.36:long*.3),y+region/2,long,-0.12);
+ },
+ compare(th,W,H){
+  const m=80;fillBg(th,W,H);
+  ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,2,82,46,800,DISP);ctx.font=hd.f;let y=drawLines(hd.ls,W/2,m+hd.size*.85,hd.size,1.05,'center')+24;
+  const ctaY=cta(th,W,H,m),g=28,cw=(W-m*2-g)/2,top=y,bh=ctaY-40-top;
+  const box=(x,fill,title,tc,items,icon,ic)=>{ctx.fillStyle=fill;rr(x,top,cw,bh,34);ctx.fill();ctx.fillStyle=tc;ctx.font=`800 ${Math.min(44,bh*.075)}px ${DISP}`;ctx.textAlign='center';ctx.fillText(title,x+cw/2,top+bh*.11);ctx.textAlign='left';
+   const iy=top+bh*.58,ih=Math.min(64,bh*.11);items.forEach((t,i)=>{const yy=iy+i*ih;ctx.fillStyle=ic;ctx.font=`800 ${ih*.5}px ${BODY}`;ctx.fillText(icon,x+28,yy);ctx.fillStyle=tc;const fs=fitOne(ctx,t,cw-90,ih*.52,600,BODY);ctx.font=`600 ${fs}px ${BODY}`;ctx.fillText(t,x+70,yy)})};
+  box(m,th.fg+'14','Paper card',th.mu,['Gets lost','Reprint to update','Type number by hand'],'✕','#E5484D');
+  box(m+cw+g,th.ac,'Infini card',th.ink,['Tap to save','Update anytime','Works for years'],'✓',th.ink);
+  // paper card art
+  const ay=top+bh*.33,pw=Math.min(cw*.7,bh*.38*1.6),phh=pw/1.6;ctx.save();ctx.translate(m+cw/2,ay);ctx.rotate(-0.08);ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=20;ctx.fillStyle='#F4F1EA';ctx.fillRect(-pw/2,-phh/2,pw,phh);ctx.shadowColor='transparent';ctx.fillStyle='#B8B2A6';[.3,.46,.6,.72].forEach((f,i)=>ctx.fillRect(-pw*.4,-phh/2+phh*f,pw*(i?.5:.62),phh*.06));ctx.restore();
+  const L=st.pd.orient==='landscape',long=L?Math.min(cw*.78,bh*.4*1.58):Math.min(bh*.4,cw*.9);placeCard('front',m+cw+g+cw/2,ay,long,0.06);
+ },
  tap(th,W,H){
-  const m=80;ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);
+  const m=80;fillBg(th,W,H);
   ctx.strokeStyle=th.ac+'33';ctx.lineWidth=4;for(let i=1;i<7;i++){ctx.beginPath();ctx.arc(W*.78,H*.36,i*W*.12,0,Math.PI*2);ctx.stroke()}
   const long=W*.6;const c=placeCard('front',W*.62,H*.34,long,0.18);
   ctx.save();ctx.translate(W*.3,H*.34+long*.34);ctx.rotate(-0.25);ctx.fillStyle=th.fg;rr(-long*.23,-long*.42,long*.46,long*.84,long*.07);ctx.fill();ctx.fillStyle=th.bg;rr(-long*.2,-long*.38,long*.4,long*.76,long*.05);ctx.fill();
@@ -1172,20 +1262,20 @@ const LAY={
   const ctaY=cta(th,W,H,m);
   ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,W-m*2,2,40,28,500,BODY);const sbH=sb.ls.length*sb.size*1.3;
   ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,3,H>W?108:92,52,800,DISP);const hdH=hd.ls.length*hd.size*1.05;
-  const y=ctaY-50-sbH-hdH;drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05);ctx.fillStyle=th.mu;drawLines(sb.ls,m,y+hdH+sb.size*.9,sb.size,1.3);
+  const y=ctaY-50-sbH-hdH;ctx.font=hd.f;drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05);ctx.fillStyle=th.mu;ctx.font=sb.f;drawLines(sb.ls,m,y+hdH+sb.size*.9,sb.size,1.3);
   badge(st.c.badge,m,m,th,36);
  },
  photo(th,W,H){
-  const m=80;ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);
-  if(bgPhoto)coverDraw(bgPhoto,W,H);else{ctx.fillStyle=th.mu+'33';ctx.fillRect(0,0,W,H);ctx.fillStyle=th.mu;ctx.font=`600 40px ${BODY}`;ctx.textAlign='center';ctx.fillText('Add a background photo below ↓',W/2,H*.22);ctx.textAlign='left'}
+  const m=80;fillBg(th,W,H);
+  if(bgPhoto)coverDraw(bgPhoto,W,H);else{ctx.fillStyle=th.mu+'26';ctx.fillRect(0,0,W,H);ctx.strokeStyle=th.mu+'55';ctx.lineWidth=3;ctx.setLineDash([14,12]);rr(40,40,W-80,H*.5,30);ctx.stroke();ctx.setLineDash([])}
   const g=ctx.createLinearGradient(0,H*.35,0,H);g.addColorStop(0,th.bg+'00');g.addColorStop(.55,th.bg+'E6');g.addColorStop(1,th.bg);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  if(st.c.cardOnPhoto){const L=st.pd.orient==='landscape';placeCard('front',W*.62,H*(H>W?.3:.28),L?W*.56:W*.36,-0.1)}
   badge(st.c.badge,m,m,th,36);
   const ctaY=cta(th,W,H,m);
-  ctx.fillStyle=th.mu;const sb=fitText(st.c.sub,W-m*2,2,40,28,500,BODY);const sbH=sb.ls.length*sb.size*1.3;
-  ctx.fillStyle=th.fg;const hd=fitText(st.c.head,W-m*2,3,100,52,800,DISP);const hdH=hd.ls.length*hd.size*1.05;
-  const p=st.c.price||st.s.price,prH=p?110:0,y=ctaY-50-sbH-hdH-prH;
-  drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05);ctx.fillStyle=th.mu;drawLines(sb.ls,m,y+hdH+sb.size*.9,sb.size,1.3);
+  const sb=fitText(st.c.sub,W-m*2,2,38,26,500,BODY);const sbH=sb.ls.length*sb.size*1.3;
+  const hd=fitText(st.c.head,W-m*2,H>W?3:2,H>W?96:80,48,800,DISP);const hdH=hd.ls.length*hd.size*1.05;
+  const p=st.c.price||st.s.price,prH=p?120:0,y=ctaY-40-sbH-hdH-prH;
+  if(st.c.cardOnPhoto){const L=st.pd.orient==='landscape',top=m+90,space=y-top-20;if(space>140){const long=Math.min(L?W*.56:W*.4,space*(L?1.3:.9));placeCard('front',W*.64,top+space/2,long,-0.1)}}
+  ctx.fillStyle=th.fg;ctx.font=hd.f;drawLines(hd.ls,m,y+hd.size*.8,hd.size,1.05);ctx.fillStyle=th.mu;ctx.font=sb.f;drawLines(sb.ls,m,y+hdH+sb.size*.9,sb.size,1.3);
   if(p){const mr=st.c.mrp||st.s.mrp;ctx.fillStyle=th.ac;ctx.font=`800 88px ${DISP}`;const yy=ctaY-44;ctx.fillText('₹'+p,m,yy);const w=ctx.measureText('₹'+p).width;
     if(mr&&mr!==p){ctx.fillStyle=th.mu;ctx.font=`600 44px ${BODY}`;const t='₹'+mr;ctx.fillText(t,m+w+24,yy);const tw=ctx.measureText(t).width;ctx.strokeStyle=th.mu;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(m+w+20,yy-15);ctx.lineTo(m+w+28+tw,yy-15);ctx.stroke()}}
  }
@@ -1236,14 +1326,14 @@ const DTHEMES={
 };
 const DPRESETS=[['Midnight Pro','#4F8CFF'],['Clean White','#2563EB'],['Emerald Trust','#10B981'],['Sunset Creator','#FF6A3D'],['Gold Executive','#D4AF37'],['Soft Sand','#C8794A'],['Neon Tech','#00D4E6'],['Rose Studio','#FB7185'],['Ink Mono','#111111']];
 
-function drawDig(){
+function drawDig(o={}){
   const d=st.dc,T=DTHEMES[d.theme]||DTHEMES.classic,W=1080,H=1920;canvas.width=W;canvas.height=H;
   const col=d.color||'#C9A24A',inkOn=c=>lum(c)>.6?'#15171F':'#FFFFFF',acc=T.mono?T.fg:col;
   // outside background
-  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,col);bg.addColorStop(1,shade(col,-70));ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=ctx.createPattern(noise,'repeat');ctx.fillRect(0,0,W,H);
+  if(!o.bare){const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,col);bg.addColorStop(1,shade(col,-70));ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=ctx.createPattern(noise,'repeat');ctx.fillRect(0,0,W,H)}
   let top=90;
-  if(d.cap){ctx.fillStyle=inkOn(col);ctx.textAlign='center';const t=fitText(d.cap,W-140,2,54,36,800,DISP);drawLines(t.ls,W/2,top+t.size*.8,t.size,1.15,'center');top+=t.ls.length*t.size*1.15+40}
+  if(d.cap&&!o.bare){ctx.fillStyle=inkOn(col);ctx.textAlign='center';const t=fitText(d.cap,W-140,2,54,36,800,DISP);drawLines(t.ls,W/2,top+t.size*.8,t.size,1.15,'center');top+=t.ls.length*t.size*1.15+40}
   const pw=760,ph=H-top-80,px=(W-pw)/2,py=top;
   ctx.save();ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=60;ctx.shadowOffsetY=30;ctx.fillStyle='#0d0d0f';rr(px,py,pw,ph,90);ctx.fill();ctx.restore();
   const sx=px+22,sy=py+22,sw=pw-44,sh=ph-44;ctx.save();rr(sx,sy,sw,sh,70);ctx.clip();
@@ -1395,19 +1485,22 @@ $('#mkShare').onclick=()=>{
 };
 
 /* ads controls */
-const C={cBadge:'badge',cHead:'head',cSub:'sub',cPrice:'price',cMrp:'mrp',cCta:'cta',cCardOnPhoto:'cardOnPhoto'};
+const C={cBadge:'badge',cHead:'head',cSub:'sub',cPrice:'price',cMrp:'mrp',cCta:'cta',cCardOnPhoto:'cardOnPhoto',cFeat:'feat',cGrad:'grad'};
 function paintAds(){
   $('#cLayouts').innerHTML=LAYOUTS.map(([k,n])=>`<button class="chip ${k===st.c.layout?'on':''}" data-k="${k}">${n}</button>`).join('');
   $$('#cLayouts .chip').forEach(b=>b.onclick=()=>{st.c.layout=b.dataset.k;save();paintAds();draw()});
-  $('#cThemes').innerHTML=THEMES.map((t,i)=>`<button class="sw ${i===st.c.theme&&!st.c.bg&&!st.c.ac?'on':''}" aria-label="${t.n}" data-i="${i}" style="background:${t.bg}"><i style="background:${t.ac}"></i></button>`).join('');
-  $$('#cThemes .sw').forEach(b=>b.onclick=()=>{st.c.theme=+b.dataset.i;st.c.bg='';st.c.ac='';save();paintAds();draw()});
-  const th=theme();$('#cBg').value=th.bg;$('#cAcc').value=th.ac;
+  $('#cThemes').innerHTML=THEMES.map((t,i)=>`<button class="sw ${i===st.c.theme&&!st.c.bg&&!st.c.ac?'on':''}" aria-label="${t.n}" data-i="${i}" style="background:${t.g?`linear-gradient(135deg,${t.g.join(',')})`:t.bg}"><i style="background:${t.ac}"></i></button>`).join('');
+  $$('#cThemes .sw').forEach(b=>b.onclick=()=>{st.c.theme=+b.dataset.i;st.c.bg='';st.c.ac='';st.c.grad=false;$('#cGrad').checked=false;save();paintAds();draw()});
+  const th=theme();$('#cBg').value=th.bg;$('#cAcc').value=th.ac;$('#cBg2').value=st.c.bg2||(th.g?th.g[th.g.length-1]:shade(th.bg,60));
+  $('#cBg2Row').hidden=!st.c.grad;$('#cFeatRow').hidden=st.c.layout!=='features';
   [...$('#cSize').children].forEach(b=>b.classList.toggle('on',b.dataset.z===st.c.size));
   $('#testiPanel').hidden=st.c.layout!=='testi';paintTesti();
 }
 [...$('#cSize').children].forEach(b=>b.onclick=()=>{st.c.size=b.dataset.z;save();paintAds();draw()});
 $('#cBg').oninput=e=>{st.c.bg=e.target.value;save();sched()};
 $('#cAcc').oninput=e=>{st.c.ac=e.target.value;save();sched()};
+$('#cBg2').oninput=e=>{st.c.bg2=e.target.value;save();sched()};
+$('#cGrad').addEventListener('change',()=>{if(st.c.grad&&!st.c.bg2)st.c.bg2=$('#cBg2').value;$('#cBg2Row').hidden=!st.c.grad;save();sched()});
 $('#cQuick').innerHTML=QUICK.map(q=>`<button class="chip">${esc(q)}</button>`).join('');
 $$('#cQuick .chip').forEach(b=>b.onclick=()=>{st.c.head=b.textContent;$('#cHead').value=st.c.head;save();draw()});
 $('#cPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;readImg(f,1600,u=>{const im=new Image();im.onload=()=>{bgPhoto=im;st.c.layout='photo';paintAds();draw()};im.src=u})};
@@ -1944,6 +2037,9 @@ function renderMeta(){
 $('#mPrice').oninput=e=>{st.meta.price=e.target.value;save();clearTimeout(window._mt);window._mt=setTimeout(renderMeta,250)};
 $('#mMrp').oninput=e=>{st.meta.mrp=e.target.value;save();clearTimeout(window._mt);window._mt=setTimeout(renderMeta,250)};
 
+/* WhatsApp app choice */
+function pushWa(){try{if(window.Android&&Android.setWaApp)Android.setWaApp(st.s.wa||'com.whatsapp.w4b')}catch(e){}}
+segInit('#waSeg','w',()=>st.s.wa||'com.whatsapp.w4b',v=>{st.s.wa=v;save();pushWa();toast(v==='com.whatsapp'?'Opens WhatsApp':'Opens WhatsApp Business')});pushWa();
 /* ---------- FEEL: haptics + system bars ---------- */
 let lastTap=0;
 document.addEventListener('click',e=>{
