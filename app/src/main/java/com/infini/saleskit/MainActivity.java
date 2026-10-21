@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
                 if ("file".equals(u.getScheme())) return false;
+                if (openWhatsApp(u)) return true;
                 try { startActivity(new Intent(Intent.ACTION_VIEW, u)); }
                 catch (Exception e) { toast("No app to open this link"); }
                 return true;
@@ -96,6 +97,28 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() { if (web.canGoBack()) web.goBack(); else super.onBackPressed(); }
 
+    private String waPkg = "com.whatsapp.w4b";
+
+    /** Sends wa.me / api.whatsapp.com links to the chosen WhatsApp app, falling back to the other one. */
+    private boolean openWhatsApp(Uri u) {
+        String h = u.getHost();
+        if (h == null || !(h.equals("wa.me") || h.endsWith("whatsapp.com"))) return false;
+        String phone = "";
+        if (h.equals("wa.me")) { String p = u.getPath(); if (p != null) phone = p.replace("/", ""); }
+        else { String p = u.getQueryParameter("phone"); if (p != null) phone = p; }
+        String text = u.getQueryParameter("text");
+        Uri api = Uri.parse("https://api.whatsapp.com/send?phone=" + phone + (text != null ? "&text=" + Uri.encode(text) : ""));
+        Uri scheme = Uri.parse("whatsapp://send?phone=" + phone + (text != null ? "&text=" + Uri.encode(text) : ""));
+        String other = waPkg.equals("com.whatsapp") ? "com.whatsapp.w4b" : "com.whatsapp";
+        for (String pkg : new String[]{waPkg, other}) {
+            for (Uri target : new Uri[]{scheme, api}) {
+                try { Intent i = new Intent(Intent.ACTION_VIEW, target); i.setPackage(pkg); startActivity(i); return true; }
+                catch (Exception ignored) { }
+            }
+        }
+        return false;
+    }
+
     private void toast(final String m) {
         runOnUiThread(() -> Toast.makeText(this, m, Toast.LENGTH_LONG).show());
     }
@@ -119,6 +142,11 @@ public class MainActivity extends Activity {
     }
 
     class Bridge {
+        @JavascriptInterface
+        public void setWaApp(String pkg) {
+            if ("com.whatsapp".equals(pkg) || "com.whatsapp.w4b".equals(pkg)) waPkg = pkg;
+        }
+
         @JavascriptInterface
         public void tap() {
             runOnUiThread(() -> web.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP));
@@ -159,10 +187,10 @@ public class MainActivity extends Activity {
                 send.setType("image/png");
                 send.putExtra(Intent.EXTRA_STREAM, u);
                 send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                Intent wa = new Intent(send);
-                wa.setPackage("com.whatsapp");
                 Intent wb = new Intent(send);
-                wb.setPackage("com.whatsapp.w4b");
+                wb.setPackage(waPkg);
+                Intent wa = new Intent(send);
+                wa.setPackage(waPkg.equals("com.whatsapp") ? "com.whatsapp.w4b" : "com.whatsapp");
                 runOnUiThread(() -> {
                     try { startActivity(wb); }
                     catch (Exception e1) {
