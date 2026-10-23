@@ -100,6 +100,11 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--dange
 .stat b{display:block;font:800 22px/1.1 var(--display);font-variant-numeric:tabular-nums}
 .stat span{font-size:11px;color:var(--muted);font-weight:600}
 .stat.due b{color:var(--danger)}
+.dgrp{display:flex;align-items:baseline;gap:8px;margin:6px 4px -4px;font:700 13px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.dgrp b{font-weight:700;font-variant-numeric:tabular-nums;opacity:.7}
+.lead .mid small.when{font-size:11.5px;opacity:.8}
+.lead .av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.lead .av{overflow:hidden}
 .lead{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;text-align:left;width:100%;color:var(--fg);font:inherit}
 .lead .av{width:40px;height:40px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font:800 16px var(--display);flex:none;color:var(--muted)}
 .lead .mid{flex:1;min-width:0}
@@ -179,6 +184,7 @@ nav button:active{transform:scale(.9)}
     </div>
     <p class="hint" id="backupNag" hidden></p>
     <input id="crmSearch" type="search" placeholder="Search name, phone or business">
+    <div class="seg" id="grpSeg"><button data-g="added">By date added</button><button data-g="next">By follow-up</button></div>
     <div class="chips" id="crmChips"></div>
     <div class="stack" id="crmList"></div>
     <div class="row">
@@ -710,7 +716,7 @@ const FONTS={cinzel:'"Cinzel",Georgia,serif',playfair:'"Playfair Display",Georgi
 let st={
  s:{me:'Hashi',biz:'Infini Cards',phone:'',upi:'',site:'cards.infinicreativestudio.in',wa:'com.whatsapp.w4b',price:'599',mrp:'1199',hrs:'48',proof:'',ref:'INFINI100',theme:'system'},
  tpl:DEFAULTS.map(x=>({...x})), lang:'en', grp:'Follow-up', view:'crm',
- leads:[], cur:null, filter:'due', lastBackup:0,
+ leads:[], cur:null, filter:'due', group:'added', lastBackup:0,
  offer:{style:'full'}, mk:'ads', cp:'offer',
  meta:{angle:'free',lang:'en',price:'',mrp:''},
  fest:{k:'',size:'post',lang:'both',offer:true,title:'',price:'499',mrp:'1199',line:'Premium NFC card + 1 year Premium free',till:'',card:true,greet:'',cta:'Order on WhatsApp'},
@@ -813,18 +819,28 @@ function renderCRM(){
   const q=$('#crmSearch').value.trim().toLowerCase();
   let L=st.leads.filter(l=>st.filter==='all'?true:st.filter==='due'?isDue(l):l.status===st.filter);
   if(q)L=st.leads.filter(l=>(l.name+' '+l.phone+' '+l.biz).toLowerCase().includes(q));
-  if(st.filter==='due'||st.filter==='all')L=[...L].sort((a,b)=>(a.next||'9')<(b.next||'9')?-1:1);
-  $('#crmList').innerHTML=L.length?L.map(l=>{
+  const byAdded=st.group!=='next';
+  L=[...L].sort(byAdded?(a,b)=>(b.created||0)-(a.created||0):(a,b)=>(a.next||'9999')<(b.next||'9999')?-1:(a.next||'9999')>(b.next||'9999')?1:(b.created||0)-(a.created||0));
+  const row=l=>{
     const d=daysFrom(l.next),stg=STAGES.find(s=>s[0]===l.status);
     const dueTxt=['won','lost'].includes(l.status)||d===null?'':d<0?`${-d}d overdue`:d===0?'Due today':d===1?'Tomorrow':`In ${d} days`;
-    return `<button class="lead" data-id="${l.id}"><span class="av">${esc((l.name||'?')[0].toUpperCase())}</span>
-      <span class="mid"><b>${esc(l.name||'No name')}</b><small>${esc([l.biz,l.phone].filter(Boolean).join(' · ')||l.source)}</small></span>
-      <span class="end"><span class="pill st-${l.status}">${stg?stg[1]:''}</span><span class="due-t ${d!==null&&d<=0&&dueTxt?'late':''}">${dueTxt}</span></span></button>`}).join('')
+    const at=l.created?new Date(l.created).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}):'';
+    return `<button class="lead" data-id="${l.id}"><span class="av">${l.logo?`<img src="${esc(l.logo)}" alt="">`:esc((l.name||'?')[0].toUpperCase())}</span>
+      <span class="mid"><b>${esc(l.name||'No name')}</b><small>${esc([l.biz,l.phone].filter(Boolean).join(' · ')||l.source)}</small>${byAdded?`<small class="when">${esc((l.source||'')+(at?' · '+at:''))}</small>`:''}</span>
+      <span class="end"><span class="pill st-${l.status}">${stg?stg[1]:''}</span><span class="due-t ${d!==null&&d<=0&&dueTxt?'late':''}">${dueTxt}</span></span></button>`};
+  const key=l=>{
+    if(byAdded){const d=-daysFrom(dayKey(l.created||Date.now()));return d<=0?'Today':d===1?'Yesterday':d<7?new Date(l.created).toLocaleDateString('en-IN',{weekday:'long'}):new Date(l.created).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:d>300?'numeric':undefined})}
+    if(!l.next)return 'No follow-up';const d=daysFrom(l.next);return d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':new Date(l.next+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  };
+  const groups=[];L.forEach(l=>{const k=key(l);const g=groups[groups.length-1];if(g&&g.k===k)g.items.push(l);else groups.push({k,items:[l]})});
+  $('#crmList').innerHTML=L.length?groups.map(g=>`<div class="dgrp"><span>${esc(g.k)}</span><b>${g.items.length}</b></div>${g.items.map(row).join('')}`).join('')
     : st.leads.length?`<div class="empty"><b>${st.filter==='due'?'All caught up 🎉':'No leads here'}</b>${st.filter==='due'?'No follow-ups due today.':'Try another filter.'}</div>`
     : `<div class="empty"><b>No leads yet</b>Add your first Instagram lead, or paste many at once.</div>`;
   $$('#crmList .lead').forEach(b=>b.onclick=()=>openLead(b.dataset.id));
 }
 $('#crmSearch').oninput=renderCRM;
+segInit('#grpSeg','g',()=>st.group||'added',v=>{st.group=v;save();renderCRM()});
+function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 $('#ldStatus').innerHTML=STAGES.map(([k,n])=>`<option value="${k}">${n}</option>`).join('');
 let ldCur=null;
 function openLead(id){
